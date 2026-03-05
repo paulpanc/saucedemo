@@ -73,11 +73,11 @@ jobs:
           - mobile-chrome
           - mobile-safari
         exclude:
+          - project: ${{ (github.event_name == 'pull_request' && 'firefox') || (github.event_name == 'workflow_dispatch' && github.event.inputs.browser != 'all' && github.event.inputs.browser != 'firefox' && 'firefox') || '' }}
+          - project: ${{ (github.event_name == 'pull_request' && 'webkit') || (github.event_name == 'workflow_dispatch' && github.event.inputs.browser != 'all' && github.event.inputs.browser != 'webkit' && 'webkit') || '' }}
+          - project: ${{ (github.event_name == 'pull_request' && 'mobile-chrome') || (github.event_name == 'workflow_dispatch' && github.event.inputs.browser != 'all' && github.event.inputs.browser != 'mobile-chrome' && 'mobile-chrome') || '' }}
+          - project: ${{ (github.event_name == 'pull_request' && 'mobile-safari') || (github.event_name == 'workflow_dispatch' && github.event.inputs.browser != 'all' && github.event.inputs.browser != 'mobile-safari' && 'mobile-safari') || '' }}
           - project: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.browser != 'all' && github.event.inputs.browser != 'chromium' && 'chromium' || '' }}
-          - project: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.browser != 'all' && github.event.inputs.browser != 'firefox' && 'firefox' || '' }}
-          - project: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.browser != 'all' && github.event.inputs.browser != 'webkit' && 'webkit' || '' }}
-          - project: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.browser != 'all' && github.event.inputs.browser != 'mobile-chrome' && 'mobile-chrome' || '' }}
-          - project: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.browser != 'all' && github.event.inputs.browser != 'mobile-safari' && 'mobile-safari' || '' }}
 
     steps:
       - name: Checkout repository
