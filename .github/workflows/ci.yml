@@ -1,0 +1,247 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      browser:
+        description: Browser(s) to run tests on
+        required: false
+        default: all
+        type: choice
+        options:
+          - all
+          - chromium
+          - firefox
+          - webkit
+          - mobile-chrome
+          - mobile-safari
+      test_suite:
+        description: Test suite to run
+        required: false
+        default: all
+        type: choice
+        options:
+          - all
+          - auth
+          - inventory
+          - cart
+          - checkout
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+
+  test:
+    name: Tests / ${{ matrix.project }}
+    needs: lint
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        project:
+          - chromium
+          - firefox
+          - webkit
+          - mobile-chrome
+          - mobile-safari
+        exclude:
+          - project: ${{ github.event.inputs.browser != 'all' && github.event.inputs.browser != 'chromium' && 'chromium' || '' }}
+          - project: ${{ github.event.inputs.browser != 'all' && github.event.inputs.browser != 'firefox' && 'firefox' || '' }}
+          - project: ${{ github.event.inputs.browser != 'all' && github.event.inputs.browser != 'webkit' && 'webkit' || '' }}
+          - project: ${{ github.event.inputs.browser != 'all' && github.event.inputs.browser != 'mobile-chrome' && 'mobile-chrome' || '' }}
+          - project: ${{ github.event.inputs.browser != 'all' && github.event.inputs.browser != 'mobile-safari' && 'mobile-safari' || '' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps ${{ matrix.project == 'mobile-chrome' && 'chromium' || matrix.project == 'mobile-safari' && 'webkit' || matrix.project }}
+
+      - name: Determine test path
+        id: suite
+        run: |
+          SUITE="${{ github.event.inputs.test_suite }}"
+          if [ -z "$SUITE" ] || [ "$SUITE" = "all" ]; then
+            echo "path=" >> "$GITHUB_OUTPUT"
+          else
+            echo "path=tests/$SUITE" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run Playwright tests
+        run: npx playwright test ${{ steps.suite.outputs.path }} --project=${{ matrix.project }}
+
+      - name: Upload test report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-${{ matrix.project }}
+          path: test-results/
+          retention-days: 3
+
+  deploy-report:
+    name: Deploy Report to GitHub Pages
+    needs: test
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    # Serialise concurrent deployments so two simultaneous PR runs
+    # never race each other on the Pages endpoint.
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Download all test reports
+        uses: actions/download-artifact@v4
+        with:
+          pattern: playwright-report-*
+          path: artifacts/
+
+      - name: Assemble report directory and build landing page
+        env:
+          RUN_NUMBER: ${{ github.run_number }}
+          GIT_SHA: ${{ github.sha }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          mkdir -p report
+
+          # Copy each browser report into its own sub-directory.
+          for src in artifacts/playwright-report-*; do
+            browser="${src#artifacts/playwright-report-}"
+            [ -d "$src" ] && cp -r "$src" "report/$browser"
+          done
+
+          # Generate the landing page with Python so we don't have to
+          # wrestle with shell quoting and heredoc edge-cases.
+          python3 << 'PYEOF'
+          import os
+
+          run_number = os.environ["RUN_NUMBER"]
+          git_sha    = os.environ["GIT_SHA"]
+          run_url    = os.environ["RUN_URL"]
+
+          browsers = sorted(
+              d for d in os.listdir("report")
+              if os.path.isdir(f"report/{d}")
+          )
+
+          cards = "\n".join(
+              f'        <li><a href="{b}/index.html">{b}</a></li>'
+              for b in browsers
+          )
+
+          html = f"""<!doctype html>
+          <html lang="en">
+            <head>
+              <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1">
+              <title>Saucedemo E2E — Test Reports</title>
+              <style>
+                *, *::before, *::after {{ box-sizing: border-box; }}
+                body {{
+                  font-family: system-ui, -apple-system, sans-serif;
+                  max-width: 680px;
+                  margin: 4rem auto;
+                  padding: 0 1.25rem;
+                  color: #1f2328;
+                  background: #fff;
+                }}
+                h1 {{ font-size: 1.4rem; margin: 0 0 .35rem; }}
+                .meta {{
+                  font-size: .85rem;
+                  color: #57606a;
+                  margin: 0 0 2rem;
+                }}
+                .meta a {{ color: inherit; }}
+                ul {{
+                  list-style: none;
+                  padding: 0;
+                  margin: 0;
+                  display: flex;
+                  flex-wrap: wrap;
+                  gap: .75rem;
+                }}
+                li a {{
+                  display: inline-block;
+                  padding: .5rem 1.25rem;
+                  border-radius: 6px;
+                  background: #0969da;
+                  color: #fff;
+                  text-decoration: none;
+                  font-size: .9rem;
+                  font-weight: 500;
+                  transition: background .15s;
+                }}
+                li a:hover {{ background: #0550ae; }}
+              </style>
+            </head>
+            <body>
+              <h1>Saucedemo E2E Test Reports</h1>
+              <p class="meta">
+                <a href="{run_url}">Run #{run_number}</a>
+                &ensp;&middot;&ensp;
+                Commit <code>{git_sha[:8]}</code>
+              </p>
+              <ul>
+          {cards}
+              </ul>
+            </body>
+          </html>
+          """
+
+          with open("report/index.html", "w") as f:
+              f.write(html)
+
+          print(f"Landing page written — browsers: {', '.join(browsers)}")
+          PYEOF
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: report/
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

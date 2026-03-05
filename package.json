@@ -1,0 +1,28 @@
+{
+  "name": "saucedemo-e2e",
+  "version": "1.0.0",
+  "description": "E2E test automation framework for saucedemo e-commerce website",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:ui": "playwright test --ui",
+    "test:debug": "playwright test --debug",
+    "test:auth": "playwright test tests/auth",
+    "test:inventory": "playwright test tests/inventory",
+    "test:cart": "playwright test tests/cart",
+    "test:checkout": "playwright test tests/checkout",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "report": "playwright show-report test-results"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.21.0",
+    "@playwright/test": "^1.50.1",
+    "@types/node": "^22.13.5",
+    "eslint": "^9.21.0",
+    "monocart-reporter": "^2.9.8",
+    "playwright-elements": "^1.18.1",
+    "typescript": "^5.7.3",
+    "typescript-eslint": "^8.25.0"
+  }
+}
