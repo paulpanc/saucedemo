@@ -119,7 +119,7 @@ jobs:
   deploy-report:
     name: Deploy Report to GitHub Pages
     needs: test
-    if: ${{ !cancelled() }}
+    if: ${{ !cancelled() && github.event_name != 'pull_request' }}
     runs-on: ubuntu-latest
     # Serialise concurrent deployments so two simultaneous PR runs
     # never race each other on the Pages endpoint.
