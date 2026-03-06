@@ -13,15 +13,30 @@
     "test:checkout": "playwright test tests/checkout",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "report": "playwright show-report test-results"
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "report": "playwright show-report test-results",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{ts,mjs}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,yml,yaml,md}": [
+      "prettier --write"
+    ]
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",
     "@playwright/test": "^1.50.1",
     "@types/node": "^22.13.5",
     "eslint": "^9.21.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.3.2",
     "monocart-reporter": "^2.9.8",
     "playwright-elements": "^1.18.1",
+    "prettier": "^3.8.1",
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.25.0"
   }
