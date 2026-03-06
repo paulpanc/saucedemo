@@ -4,25 +4,26 @@ export interface CheckoutInfo {
   postalCode: string;
 }
 
-export const CHECKOUT_INFO: Record<string, CheckoutInfo> = {
-  valid: {
-    firstName: 'John',
-    lastName: 'Doe',
-    postalCode: '12345',
-  },
-  emptyFirstName: {
-    firstName: '',
-    lastName: 'Doe',
-    postalCode: '12345',
-  },
-  emptyLastName: {
-    firstName: 'John',
-    lastName: '',
-    postalCode: '12345',
-  },
-  emptyPostalCode: {
-    firstName: 'John',
-    lastName: 'Doe',
-    postalCode: '',
-  },
+export const VALID_CHECKOUT_INFO: CheckoutInfo = {
+  firstName: 'John',
+  lastName: 'Doe',
+  postalCode: '12345',
+};
+
+export const EMPTY_FIRST_NAME_CHECKOUT_INFO: CheckoutInfo = {
+  firstName: '',
+  lastName: 'Doe',
+  postalCode: '12345',
+};
+
+export const EMPTY_LAST_NAME_CHECKOUT_INFO: CheckoutInfo = {
+  firstName: 'John',
+  lastName: '',
+  postalCode: '12345',
+};
+
+export const EMPTY_POSTAL_CODE_CHECKOUT_INFO: CheckoutInfo = {
+  firstName: 'John',
+  lastName: 'Doe',
+  postalCode: '',
 };

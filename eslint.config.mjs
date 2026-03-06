@@ -15,16 +15,11 @@ export default tseslint.config(
       'no-empty-pattern': 'off',
       'prefer-const': 'error',
       'no-var': 'error',
-      'eqeqeq': ['error', 'always'],
-      'curly': ['error', 'all'],
+      eqeqeq: ['error', 'always'],
+      curly: ['error', 'all'],
     },
   },
   {
-    ignores: [
-      'node_modules/**',
-      'dist/**',
-      'test-results/**',
-      'playwright-report/**',
-    ],
-  }
+    ignores: ['node_modules/**', 'dist/**', 'test-results/**', 'playwright-report/**'],
+  },
 );

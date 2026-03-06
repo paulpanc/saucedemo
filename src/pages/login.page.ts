@@ -2,6 +2,7 @@ import { $ } from 'playwright-elements';
 import { BasePage } from './base.page';
 
 export class LoginPage extends BasePage {
+  readonly title = $('.login_logo');
   readonly usernameInput = $('#user-name');
   readonly passwordInput = $('#password');
   readonly loginButton = $('#login-button');

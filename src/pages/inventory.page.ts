@@ -40,15 +40,10 @@ export class InventoryPage extends BasePage {
 
   readonly menuCloseButton = $('#react-burger-cross-btn');
   readonly logoutLink = $('#logout_sidebar_link');
-  readonly resetAppStateLink = $('#reset_sidebar_link');
-
-  async goto(): Promise<void> {
-    await this.navigate('/inventory.html');
-  }
 
   async getProductPrices(): Promise<number[]> {
     const texts = await this.inventoryItem.price.allInnerTexts();
-    return texts.map(t => parseFloat(t.replace('$', '')));
+    return texts.map((t) => parseFloat(t.replace('$', '')));
   }
 
   async getProductDetails(index: number): Promise<ProductItem> {
@@ -85,11 +80,5 @@ export class InventoryPage extends BasePage {
   async logout(): Promise<void> {
     await this.burgerMenuButton.click({ delay: 100 });
     await this.logoutLink.click();
-  }
-
-  async resetAppState(): Promise<void> {
-    await this.burgerMenuButton.click({ delay: 100 });
-    await this.resetAppStateLink.click({ delay: 100 });
-    await this.menuCloseButton.click();
   }
 }

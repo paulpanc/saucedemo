@@ -1,53 +1,23 @@
-import { test as base } from 'playwright-elements';
-import { LoginPage } from '@pages/login.page';
+import type { PageObject } from 'playwright-elements';
+import { test as base, buildPageObject } from 'playwright-elements';
+import * as pageObjectModule from '../pages';
 import { InventoryPage } from '@pages/inventory.page';
-import { CartPage } from '@pages/cart.page';
-import { CheckoutPage } from '@pages/checkout.page';
-import { USERS } from '@data/users';
-
-type ProductsData = {
-  names: string[];
-  prices: number[];
-  count: number;
-};
+import { STANDARD_USER } from '@data/users';
 
 type TestFixtures = {
-  loginPage: LoginPage;
-  inventoryPage: InventoryPage;
-  cartPage: CartPage;
-  checkoutPage: CheckoutPage;
+  pageObject: PageObject<typeof pageObjectModule>;
   loggedInPage: InventoryPage;
-  products: ProductsData;
 };
 
 export const test = base.extend<TestFixtures>({
-  loginPage: async ({}, use) => {
-    await use(new LoginPage());
+  pageObject: async ({}, use) => {
+    await use(buildPageObject(pageObjectModule));
   },
 
-  inventoryPage: async ({}, use) => {
+  loggedInPage: async ({ pageObject }, use) => {
+    await pageObject.login.goto();
+    await pageObject.login.login(STANDARD_USER.username, STANDARD_USER.password);
     await use(new InventoryPage());
-  },
-
-  cartPage: async ({}, use) => {
-    await use(new CartPage());
-  },
-
-  checkoutPage: async ({}, use) => {
-    await use(new CheckoutPage());
-  },
-
-  loggedInPage: async ({}, use) => {
-    const loginPage = new LoginPage();
-    await loginPage.goto();
-    await loginPage.login(USERS.standard.username, USERS.standard.password);
-    await use(new InventoryPage());
-  },
-
-  products: async ({ loggedInPage }, use) => {
-    const names = await loggedInPage.inventoryItem.name.allInnerTexts();
-    const prices = await loggedInPage.getProductPrices();
-    await use({ names, prices, count: names.length });
   },
 });
 

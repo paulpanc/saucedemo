@@ -22,7 +22,7 @@ export class CartPage extends BasePage {
   });
 
   async getCartItems(): Promise<CartItem[]> {
-    return this.cartItem.map(async item => ({
+    return this.cartItem.map(async (item) => ({
       name: await item.itemName.innerText(),
       description: await item.itemDescription.innerText(),
       price: parseFloat((await item.itemPrice.innerText()).replace('$', '')),

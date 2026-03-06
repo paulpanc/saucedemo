@@ -18,15 +18,6 @@
       "@data/*": ["src/data/*"]
     }
   },
-  "include": [
-    "src/**/*.ts",
-    "tests/**/*.ts",
-    "playwright.config.ts",
-    "eslint.config.mjs"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "test-results"
-  ]
+  "include": ["src/**/*.ts", "tests/**/*.ts", "playwright.config.ts", "eslint.config.mjs"],
+  "exclude": ["node_modules", "dist", "test-results"]
 }

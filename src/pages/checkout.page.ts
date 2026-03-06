@@ -50,7 +50,7 @@ export class CheckoutPage extends BasePage {
   }
 
   async getOrderItems(): Promise<{ name: string; price: number }[]> {
-    return this.cartItem.map(async item => ({
+    return this.cartItem.map(async (item) => ({
       name: await item.itemName.innerText(),
       price: parseFloat((await item.itemPrice.innerText()).replace('$', '')),
     }));

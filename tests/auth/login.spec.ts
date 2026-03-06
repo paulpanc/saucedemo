@@ -1,114 +1,123 @@
-import { test, expect } from '@fixtures/index';
-import { USERS } from '@data/users';
+import { test } from '@fixtures/index';
+import {
+  STANDARD_USER,
+  LOCKED_USER,
+  PROBLEM_USER,
+  PERFORMANCE_GLITCH_USER,
+  ERROR_USER,
+  VISUAL_USER,
+} from '@data/users';
 
 test.describe('Login', () => {
-  test.beforeEach(async ({ loginPage }) => {
-    await loginPage.goto();
+  test.beforeEach(async ({ pageObject }) => {
+    await pageObject.login.goto();
   });
 
-  test('logs in with valid credentials', async ({ loginPage, page }) => {
-    await loginPage.login(USERS.standard.username, USERS.standard.password);
-    await expect(page).toHaveURL(/inventory/u);
+  test('logs in with valid credentials', async ({ pageObject }) => {
+    await pageObject.login.login(STANDARD_USER.username, STANDARD_USER.password);
+    await pageObject.inventory.cartLink.expect().toBeVisible();
   });
 
-  test('login page loads with correct initial state', async ({ loginPage, page }) => {
+  test('login page loads with correct initial state', async ({ pageObject }) => {
     await test.step('page title is "Swag Labs"', async () => {
-      await expect(page).toHaveTitle('Swag Labs');
+      await pageObject.login.title.expect().toHaveText('Swag Labs');
     });
 
     await test.step('username input is visible and enabled', async () => {
-      await loginPage.usernameInput.expect().toBeVisible();
-      await loginPage.usernameInput.expect().toBeEnabled();
+      await pageObject.login.usernameInput.expect().toBeVisible();
+      await pageObject.login.usernameInput.expect().toBeEnabled();
     });
 
     await test.step('password input is visible and enabled', async () => {
-      await loginPage.passwordInput.expect().toBeVisible();
-      await loginPage.passwordInput.expect().toBeEnabled();
+      await pageObject.login.passwordInput.expect().toBeVisible();
+      await pageObject.login.passwordInput.expect().toBeEnabled();
     });
 
     await test.step('login button is visible and enabled', async () => {
-      await loginPage.loginButton.expect().toBeVisible();
-      await loginPage.loginButton.expect().toBeEnabled();
+      await pageObject.login.loginButton.expect().toBeVisible();
+      await pageObject.login.loginButton.expect().toBeEnabled();
     });
 
     await test.step('no error message shown on initial load', async () => {
-      await loginPage.errorMessage.expect().toBeHidden();
+      await pageObject.login.errorMessage.expect().toBeHidden();
     });
   });
 
-  test('credential validation shows appropriate errors', async ({ loginPage, page }) => {
+  test('credential validation shows appropriate errors', async ({ pageObject }) => {
     await test.step('both fields empty → "Username is required"', async () => {
-      await loginPage.login('', '');
-      await loginPage.errorMessage.expect().toContainText('Username is required');
-      await loginPage.goto();
+      await pageObject.login.login('', '');
+      await pageObject.login.errorMessage.expect().toContainText('Username is required');
+      await pageObject.login.goto();
     });
 
     await test.step('username missing → "Username is required"', async () => {
-      await loginPage.login('', USERS.standard.password);
-      await loginPage.errorMessage.expect().toContainText('Username is required');
-      await loginPage.goto();
+      await pageObject.login.login('', STANDARD_USER.password);
+      await pageObject.login.errorMessage.expect().toContainText('Username is required');
+      await pageObject.login.goto();
     });
 
     await test.step('password missing → "Password is required"', async () => {
-      await loginPage.login(USERS.standard.username, '');
-      await loginPage.errorMessage.expect().toContainText('Password is required');
-      await loginPage.goto();
+      await pageObject.login.login(STANDARD_USER.username, '');
+      await pageObject.login.errorMessage.expect().toContainText('Password is required');
+      await pageObject.login.goto();
     });
 
     await test.step('invalid credentials → mismatch error', async () => {
-      await loginPage.login('wrong_user', 'wrong_pass');
-      await loginPage.errorMessage.expect().toContainText('Username and password do not match');
-      await loginPage.goto();
+      await pageObject.login.login('wrong_user', 'wrong_pass');
+      await pageObject.login.errorMessage
+        .expect()
+        .toContainText('Username and password do not match');
+      await pageObject.login.goto();
     });
 
     await test.step('locked-out user → locked out error', async () => {
-      await loginPage.login(USERS.locked.username, USERS.locked.password);
-      await loginPage.errorMessage.expect().toContainText('locked out');
-      await loginPage.goto();
+      await pageObject.login.login(LOCKED_USER.username, LOCKED_USER.password);
+      await pageObject.login.errorMessage.expect().toContainText('locked out');
+      await pageObject.login.goto();
     });
 
     await test.step('username is case-sensitive — wrong case is rejected', async () => {
-      await loginPage.login('Standard_User', USERS.standard.password);
-      await loginPage.errorMessage.expect().toBeVisible();
-      await expect(page).not.toHaveURL(/inventory/u);
-      await loginPage.goto();
+      await pageObject.login.login('Standard_User', STANDARD_USER.password);
+      await pageObject.login.errorMessage.expect().toBeVisible();
+      await pageObject.inventory.cartLink.expect().not.toBeVisible();
+      await pageObject.login.goto();
     });
 
     await test.step('password is case-sensitive — wrong case is rejected', async () => {
-      await loginPage.login(USERS.standard.username, 'Secret_Sauce');
-      await loginPage.errorMessage.expect().toBeVisible();
-      await expect(page).not.toHaveURL(/inventory/u);
+      await pageObject.login.login(STANDARD_USER.username, 'Secret_Sauce');
+      await pageObject.login.errorMessage.expect().toBeVisible();
+      await pageObject.inventory.cartLink.expect().not.toBeVisible();
     });
   });
 
-  test('error UI lifecycle after a failed login', async ({ loginPage }) => {
+  test('error UI lifecycle after a failed login', async ({ pageObject }) => {
     await test.step('error icon, message appear and username is retained', async () => {
-      await loginPage.login('wrong_user', 'wrong_pass');
-      await loginPage.errorMessage.expect().toBeVisible();
-      await loginPage.errorIcon.first().expect().toBeVisible();
-      await loginPage.usernameInput.expect().toHaveValue('wrong_user');
+      await pageObject.login.login('wrong_user', 'wrong_pass');
+      await pageObject.login.errorMessage.expect().toBeVisible();
+      await pageObject.login.errorIcon.first().expect().toBeVisible();
+      await pageObject.login.usernameInput.expect().toHaveValue('wrong_user');
     });
 
     await test.step('dismissing the error clears both the icon and the message', async () => {
-      await loginPage.errorCloseButton.click();
-      await loginPage.errorMessage.expect().toBeHidden();
-      await loginPage.errorIcon.first().expect().toBeHidden();
+      await pageObject.login.errorCloseButton.click();
+      await pageObject.login.errorMessage.expect().toBeHidden();
+      await pageObject.login.errorIcon.first().expect().toBeHidden();
     });
   });
 
   test.describe('all non-locked user types', () => {
     const loginableUsers: { key: string; username: string; password: string }[] = [
-      { key: 'standard', ...USERS.standard },
-      { key: 'problem', ...USERS.problem },
-      { key: 'performance_glitch', ...USERS.performanceGlitch },
-      { key: 'error', ...USERS.error },
-      { key: 'visual', ...USERS.visual },
+      { key: 'standard', ...STANDARD_USER },
+      { key: 'problem', ...PROBLEM_USER },
+      { key: 'performance_glitch', ...PERFORMANCE_GLITCH_USER },
+      { key: 'error', ...ERROR_USER },
+      { key: 'visual', ...VISUAL_USER },
     ];
 
     for (const user of loginableUsers) {
-      test(`${user.key} user lands on inventory after login`, async ({ loginPage, page }) => {
-        await loginPage.login(user.username, user.password);
-        await expect(page).toHaveURL(/inventory/u);
+      test(`${user.key} user lands on inventory after login`, async ({ pageObject }) => {
+        await pageObject.login.login(user.username, user.password);
+        await pageObject.inventory.cartLink.expect().toBeVisible();
       });
     }
   });
