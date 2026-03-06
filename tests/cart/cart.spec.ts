@@ -1,24 +1,25 @@
 import { test, expect } from '@fixtures/index';
+import { BACKPACK_PRODUCT, BIKE_LIGHT_PRODUCT } from '@data/products';
 
 test.describe('Cart', () => {
   test.describe('with items', () => {
-    test.beforeEach(async ({ loggedInPage, products }) => {
-      await loggedInPage.addToCartButton(products.names[0]).click();
-      await loggedInPage.addToCartButton(products.names[1]).click();
+    test.beforeEach(async ({ loggedInPage }) => {
+      await loggedInPage.addToCartButton(BACKPACK_PRODUCT.name).click();
+      await loggedInPage.addToCartButton(BIKE_LIGHT_PRODUCT.name).click();
       await loggedInPage.cartLink.click();
     });
 
-    test('displays correct items and data', async ({ pageObject, products }) => {
+    test('displays correct items and data', async ({ pageObject }) => {
       await test.step('page title is "Your Cart"', async () => {
         await pageObject.cart.pageTitle.expect().toHaveText('Your Cart');
       });
 
       await test.step('both added products appear in the cart', async () => {
         await expect(
-          pageObject.cart.cartItem.locator.filter({ hasText: products.names[0] }),
+          pageObject.cart.cartItem.locator.filter({ hasText: BACKPACK_PRODUCT.name }),
         ).toBeVisible();
         await expect(
-          pageObject.cart.cartItem.locator.filter({ hasText: products.names[1] }),
+          pageObject.cart.cartItem.locator.filter({ hasText: BIKE_LIGHT_PRODUCT.name }),
         ).toBeVisible();
       });
 
@@ -34,9 +35,9 @@ test.describe('Cart', () => {
 
       await test.step('first item has correct price and quantity of 1', async () => {
         const items = await pageObject.cart.getCartItems();
-        const firstItem = items.find((i) => i.name === products.names[0]);
+        const firstItem = items.find((i) => i.name === BACKPACK_PRODUCT.name);
         expect(firstItem).toBeDefined();
-        expect(firstItem?.price).toBeCloseTo(products.prices[0], 2);
+        expect(firstItem?.price).toBeCloseTo(BACKPACK_PRODUCT.price, 2);
         expect(firstItem?.quantity).toBe(1);
       });
 
@@ -48,18 +49,18 @@ test.describe('Cart', () => {
       });
     });
 
-    test('removing items updates cart state correctly', async ({ pageObject, products }) => {
+    test('removing items updates cart state correctly', async ({ pageObject }) => {
       await test.step('remove first item → item gone, count = 1, badge = 1', async () => {
-        await pageObject.cart.removeButton(products.names[0]).click();
+        await pageObject.cart.removeButton(BACKPACK_PRODUCT.name).click();
         await expect(
-          pageObject.cart.cartItem.locator.filter({ hasText: products.names[0] }),
+          pageObject.cart.cartItem.locator.filter({ hasText: BACKPACK_PRODUCT.name }),
         ).toHaveCount(0);
         await expect(pageObject.cart.cartItem.locator).toHaveCount(1);
         expect(await pageObject.cart.getCartBadgeCount()).toBe(1);
       });
 
       await test.step('remove last item → cart is empty', async () => {
-        await pageObject.cart.removeButton(products.names[1]).click();
+        await pageObject.cart.removeButton(BIKE_LIGHT_PRODUCT.name).click();
         await expect(pageObject.cart.cartItem.locator).toHaveCount(0);
       });
     });
@@ -103,16 +104,12 @@ test.describe('Cart', () => {
   });
 
   test.describe('cart persistence', () => {
-    test.beforeEach(async ({ loggedInPage, products }) => {
-      await loggedInPage.addToCartButton(products.names[0]).click();
+    test.beforeEach(async ({ loggedInPage }) => {
+      await loggedInPage.addToCartButton(BACKPACK_PRODUCT.name).click();
       await loggedInPage.cartLink.click();
     });
 
-    test('cart persists through a navigation round trip', async ({
-      pageObject,
-      loggedInPage,
-      products,
-    }) => {
+    test('cart persists through a navigation round trip', async ({ pageObject, loggedInPage }) => {
       await test.step('continue shopping → inventory, badge still shows 1', async () => {
         await pageObject.cart.continueShoppingButton.click();
         expect(await loggedInPage.getCartBadgeCount()).toBe(1);
@@ -121,7 +118,7 @@ test.describe('Cart', () => {
       await test.step('return to cart → item is still present', async () => {
         await loggedInPage.cartLink.click();
         await expect(
-          pageObject.cart.cartItem.locator.filter({ hasText: products.names[0] }),
+          pageObject.cart.cartItem.locator.filter({ hasText: BACKPACK_PRODUCT.name }),
         ).toBeVisible();
       });
     });

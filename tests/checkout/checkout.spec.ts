@@ -5,11 +5,12 @@ import {
   EMPTY_LAST_NAME_CHECKOUT_INFO,
   EMPTY_POSTAL_CODE_CHECKOUT_INFO,
 } from '@data/checkout-info';
+import { BACKPACK_PRODUCT, BIKE_LIGHT_PRODUCT, BOLT_TSHIRT_PRODUCT } from '@data/products';
 
 test.describe('Checkout', () => {
   test.describe('Customer information', () => {
-    test.beforeEach(async ({ loggedInPage, pageObject, products }) => {
-      await loggedInPage.addToCartButton(products.names[0]).click();
+    test.beforeEach(async ({ loggedInPage, pageObject }) => {
+      await loggedInPage.addToCartButton(BACKPACK_PRODUCT.name).click();
       await loggedInPage.cartLink.click();
       await pageObject.cart.checkoutButton.click();
     });
@@ -71,29 +72,29 @@ test.describe('Checkout', () => {
   });
 
   test.describe('Order overview', () => {
-    test.beforeEach(async ({ loggedInPage, pageObject, products }) => {
-      await loggedInPage.addToCartButton(products.names[0]).click();
+    test.beforeEach(async ({ loggedInPage, pageObject }) => {
+      await loggedInPage.addToCartButton(BACKPACK_PRODUCT.name).click();
       await loggedInPage.cartLink.click();
       await pageObject.cart.checkoutButton.click();
       await pageObject.checkout.fillInfo(VALID_CHECKOUT_INFO);
       await pageObject.checkout.continueButton.click();
     });
 
-    test('order overview shows correct details', async ({ pageObject, products }) => {
+    test('order overview shows correct details', async ({ pageObject }) => {
       await test.step('page title is "Checkout: Overview"', async () => {
         await pageObject.checkout.pageTitle.expect().toHaveText('Checkout: Overview');
       });
 
       await test.step('added item appears in the order', async () => {
         await expect(
-          pageObject.checkout.cartItem.locator.filter({ hasText: products.names[0] }),
+          pageObject.checkout.cartItem.locator.filter({ hasText: BACKPACK_PRODUCT.name }),
         ).toBeVisible();
       });
 
       await test.step('item price matches the inventory price', async () => {
         const items = await pageObject.checkout.getOrderItems();
-        const firstItem = items.find((i) => i.name === products.names[0]);
-        expect(firstItem?.price).toBeCloseTo(products.prices[0], 2);
+        const firstItem = items.find((i) => i.name === BACKPACK_PRODUCT.name);
+        expect(firstItem?.price).toBeCloseTo(BACKPACK_PRODUCT.price, 2);
       });
 
       await test.step('tax is greater than zero', async () => {
@@ -119,9 +120,9 @@ test.describe('Checkout', () => {
   });
 
   test.describe('Multi-item order', () => {
-    test.beforeEach(async ({ loggedInPage, pageObject, products }) => {
-      for (const name of products.names.slice(0, 3)) {
-        await loggedInPage.addToCartButton(name).click();
+    test.beforeEach(async ({ loggedInPage, pageObject }) => {
+      for (const product of [BACKPACK_PRODUCT, BIKE_LIGHT_PRODUCT, BOLT_TSHIRT_PRODUCT]) {
+        await loggedInPage.addToCartButton(product.name).click();
       }
       await loggedInPage.cartLink.click();
       await pageObject.cart.checkoutButton.click();
@@ -129,16 +130,17 @@ test.describe('Checkout', () => {
       await pageObject.checkout.continueButton.click();
     });
 
-    test('subtotal equals the sum of all item prices', async ({ pageObject, products }) => {
-      const expectedSubtotal = products.prices.slice(0, 3).reduce((sum, p) => sum + p, 0);
+    test('subtotal equals the sum of all item prices', async ({ pageObject }) => {
+      const expectedSubtotal =
+        BACKPACK_PRODUCT.price + BIKE_LIGHT_PRODUCT.price + BOLT_TSHIRT_PRODUCT.price;
       const summary = await pageObject.checkout.getOrderSummary();
       expect(summary.itemTotal).toBeCloseTo(expectedSubtotal, 2);
     });
   });
 
   test.describe('Order complete', () => {
-    test.beforeEach(async ({ loggedInPage, pageObject, products }) => {
-      await loggedInPage.addToCartButton(products.names[0]).click();
+    test.beforeEach(async ({ loggedInPage, pageObject }) => {
+      await loggedInPage.addToCartButton(BACKPACK_PRODUCT.name).click();
       await loggedInPage.cartLink.click();
       await pageObject.cart.checkoutButton.click();
       await pageObject.checkout.fillInfo(VALID_CHECKOUT_INFO);
