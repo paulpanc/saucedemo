@@ -1,5 +1,10 @@
 import { test, expect } from '@fixtures/index';
-import { CHECKOUT_INFO } from '@data/checkout-info';
+import {
+  VALID_CHECKOUT_INFO,
+  EMPTY_FIRST_NAME_CHECKOUT_INFO,
+  EMPTY_LAST_NAME_CHECKOUT_INFO,
+  EMPTY_POSTAL_CODE_CHECKOUT_INFO,
+} from '@data/checkout-info';
 
 test.describe('Checkout', () => {
   test.describe('Customer information', () => {
@@ -14,7 +19,7 @@ test.describe('Checkout', () => {
     });
 
     test('proceeds to step two with valid information', async ({ checkoutPage, page }) => {
-      await checkoutPage.fillInfo(CHECKOUT_INFO['valid']);
+      await checkoutPage.fillInfo(VALID_CHECKOUT_INFO);
       await checkoutPage.continueButton.click();
       await expect(page).toHaveURL(/checkout-step-two/u);
     });
@@ -28,32 +33,32 @@ test.describe('Checkout', () => {
       });
 
       await test.step('first name missing → "First Name is required"', async () => {
-        await checkoutPage.fillInfo(CHECKOUT_INFO['emptyFirstName']);
+        await checkoutPage.fillInfo(EMPTY_FIRST_NAME_CHECKOUT_INFO);
         await checkoutPage.continueButton.click();
         await checkoutPage.errorMessage.expect().toContainText('First Name is required');
         await checkoutPage.errorMessage.locator.locator('.error-button').click();
       });
 
       await test.step('last name missing → "Last Name is required"', async () => {
-        await checkoutPage.fillInfo(CHECKOUT_INFO['emptyLastName']);
+        await checkoutPage.fillInfo(EMPTY_LAST_NAME_CHECKOUT_INFO);
         await checkoutPage.continueButton.click();
         await checkoutPage.errorMessage.expect().toContainText('Last Name is required');
         await checkoutPage.errorMessage.locator.locator('.error-button').click();
       });
 
       await test.step('postal code missing → "Postal Code is required"', async () => {
-        await checkoutPage.fillInfo(CHECKOUT_INFO['emptyPostalCode']);
+        await checkoutPage.fillInfo(EMPTY_POSTAL_CODE_CHECKOUT_INFO);
         await checkoutPage.continueButton.click();
         await checkoutPage.errorMessage.expect().toContainText('Postal Code is required');
         await checkoutPage.errorMessage.locator.locator('.error-button').click();
       });
 
       await test.step('last name and postal code are retained after a failed attempt', async () => {
-        await checkoutPage.fillInfo(CHECKOUT_INFO['valid']);
+        await checkoutPage.fillInfo(VALID_CHECKOUT_INFO);
         await checkoutPage.firstNameInput.fill('');
         await checkoutPage.continueButton.click();
-        await checkoutPage.lastNameInput.expect().toHaveValue(CHECKOUT_INFO['valid'].lastName);
-        await checkoutPage.postalCodeInput.expect().toHaveValue(CHECKOUT_INFO['valid'].postalCode);
+        await checkoutPage.lastNameInput.expect().toHaveValue(VALID_CHECKOUT_INFO.lastName);
+        await checkoutPage.postalCodeInput.expect().toHaveValue(VALID_CHECKOUT_INFO.postalCode);
       });
     });
 
@@ -68,7 +73,7 @@ test.describe('Checkout', () => {
       await loggedInPage.addToCartButton(products.names[0]).click();
       await loggedInPage.cartLink.click();
       await cartPage.checkoutButton.click();
-      await checkoutPage.fillInfo(CHECKOUT_INFO['valid']);
+      await checkoutPage.fillInfo(VALID_CHECKOUT_INFO);
       await checkoutPage.continueButton.click();
     });
 
@@ -118,7 +123,7 @@ test.describe('Checkout', () => {
       }
       await loggedInPage.cartLink.click();
       await cartPage.checkoutButton.click();
-      await checkoutPage.fillInfo(CHECKOUT_INFO['valid']);
+      await checkoutPage.fillInfo(VALID_CHECKOUT_INFO);
       await checkoutPage.continueButton.click();
     });
 
@@ -134,7 +139,7 @@ test.describe('Checkout', () => {
       await loggedInPage.addToCartButton(products.names[0]).click();
       await loggedInPage.cartLink.click();
       await cartPage.checkoutButton.click();
-      await checkoutPage.fillInfo(CHECKOUT_INFO['valid']);
+      await checkoutPage.fillInfo(VALID_CHECKOUT_INFO);
       await checkoutPage.continueButton.click();
       await checkoutPage.finishButton.click();
     });

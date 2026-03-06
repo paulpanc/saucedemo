@@ -3,7 +3,7 @@ import { LoginPage } from '@pages/login.page';
 import { InventoryPage } from '@pages/inventory.page';
 import { CartPage } from '@pages/cart.page';
 import { CheckoutPage } from '@pages/checkout.page';
-import { USERS } from '@data/users';
+import { STANDARD_USER } from '@data/users';
 
 type ProductsData = {
   names: string[];
@@ -40,7 +40,7 @@ export const test = base.extend<TestFixtures>({
   loggedInPage: async ({}, use) => {
     const loginPage = new LoginPage();
     await loginPage.goto();
-    await loginPage.login(USERS.standard.username, USERS.standard.password);
+    await loginPage.login(STANDARD_USER.username, STANDARD_USER.password);
     await use(new InventoryPage());
   },
 
