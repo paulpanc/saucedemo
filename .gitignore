@@ -20,7 +20,6 @@ build/Release
 
 # Optional eslint cache
 .eslintcache
-.husky/
 
 # dotenv environment variable files
 .env

@@ -21,10 +21,10 @@
   "lint-staged": {
     "*.{ts,mjs}": [
       "eslint --fix",
-      "prettier --write"
+      "prettier --check"
     ],
     "*.{json,yml,yaml,md}": [
-      "prettier --write"
+      "prettier --check"
     ]
   },
   "devDependencies": {
