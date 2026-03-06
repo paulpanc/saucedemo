@@ -1,11 +1,11 @@
 import { test, expect } from '@fixtures/index';
 
 test.describe('Demo Working Test', () => {
-  test('login page loads with the correct title', async ({ loginPage, page }) => {
-    await loginPage.goto();
+  test('login page loads with the correct title', async ({ pageObject, page }) => {
+    await pageObject.login.goto();
     await expect(page).toHaveTitle('Swag Labs');
-    await loginPage.usernameInput.expect().toBeVisible();
-    await loginPage.passwordInput.expect().toBeVisible();
-    await loginPage.loginButton.expect().toBeVisible();
+    await pageObject.login.usernameInput.expect().toBeVisible();
+    await pageObject.login.passwordInput.expect().toBeVisible();
+    await pageObject.login.loginButton.expect().toBeVisible();
   });
 });
