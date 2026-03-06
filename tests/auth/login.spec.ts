@@ -1,4 +1,4 @@
-import { test, expect } from '@fixtures/index';
+import { test } from '@fixtures/index';
 import {
   STANDARD_USER,
   LOCKED_USER,
@@ -13,14 +13,14 @@ test.describe('Login', () => {
     await pageObject.login.goto();
   });
 
-  test('logs in with valid credentials', async ({ pageObject, page }) => {
+  test('logs in with valid credentials', async ({ pageObject }) => {
     await pageObject.login.login(STANDARD_USER.username, STANDARD_USER.password);
-    await expect(page).toHaveURL(/inventory/u);
+    await pageObject.inventory.cartLink.expect().toBeVisible();
   });
 
-  test('login page loads with correct initial state', async ({ pageObject, page }) => {
+  test('login page loads with correct initial state', async ({ pageObject }) => {
     await test.step('page title is "Swag Labs"', async () => {
-      await expect(page).toHaveTitle('Swag Labs');
+      await pageObject.login.title.expect().toHaveText('Swag Labs');
     });
 
     await test.step('username input is visible and enabled', async () => {
@@ -43,7 +43,7 @@ test.describe('Login', () => {
     });
   });
 
-  test('credential validation shows appropriate errors', async ({ pageObject, page }) => {
+  test('credential validation shows appropriate errors', async ({ pageObject }) => {
     await test.step('both fields empty → "Username is required"', async () => {
       await pageObject.login.login('', '');
       await pageObject.login.errorMessage.expect().toContainText('Username is required');
@@ -79,14 +79,14 @@ test.describe('Login', () => {
     await test.step('username is case-sensitive — wrong case is rejected', async () => {
       await pageObject.login.login('Standard_User', STANDARD_USER.password);
       await pageObject.login.errorMessage.expect().toBeVisible();
-      await expect(page).not.toHaveURL(/inventory/u);
+      await pageObject.inventory.cartLink.expect().not.toBeVisible();
       await pageObject.login.goto();
     });
 
     await test.step('password is case-sensitive — wrong case is rejected', async () => {
       await pageObject.login.login(STANDARD_USER.username, 'Secret_Sauce');
       await pageObject.login.errorMessage.expect().toBeVisible();
-      await expect(page).not.toHaveURL(/inventory/u);
+      await pageObject.inventory.cartLink.expect().not.toBeVisible();
     });
   });
 
@@ -115,9 +115,9 @@ test.describe('Login', () => {
     ];
 
     for (const user of loginableUsers) {
-      test(`${user.key} user lands on inventory after login`, async ({ pageObject, page }) => {
+      test(`${user.key} user lands on inventory after login`, async ({ pageObject }) => {
         await pageObject.login.login(user.username, user.password);
-        await expect(page).toHaveURL(/inventory/u);
+        await pageObject.inventory.cartLink.expect().toBeVisible();
       });
     }
   });

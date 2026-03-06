@@ -18,10 +18,10 @@ test.describe('Checkout', () => {
       await pageObject.checkout.pageTitle.expect().toHaveText('Checkout: Your Information');
     });
 
-    test('proceeds to step two with valid information', async ({ pageObject, page }) => {
+    test('proceeds to step two with valid information', async ({ pageObject }) => {
       await pageObject.checkout.fillInfo(VALID_CHECKOUT_INFO);
       await pageObject.checkout.continueButton.click();
-      await expect(page).toHaveURL(/checkout-step-two/u);
+      await pageObject.checkout.finishButton.expect().toBeVisible();
     });
 
     test('validates required fields and retains values on failure', async ({ pageObject }) => {
@@ -64,9 +64,9 @@ test.describe('Checkout', () => {
       });
     });
 
-    test('cancel returns to cart page', async ({ pageObject, page }) => {
+    test('cancel returns to cart page', async ({ pageObject }) => {
       await pageObject.checkout.cancelButton.click();
-      await expect(page).toHaveURL(/cart/u);
+      await pageObject.cart.pageTitle.expect().toBeVisible();
     });
   });
 
@@ -107,14 +107,14 @@ test.describe('Checkout', () => {
       });
     });
 
-    test('cancel returns to inventory page', async ({ pageObject, page }) => {
+    test('cancel returns to inventory page', async ({ pageObject }) => {
       await pageObject.checkout.cancelButton.click();
-      await expect(page).toHaveURL(/inventory/u);
+      await pageObject.inventory.pageTitle.expect().toBeVisible();
     });
 
-    test('finish button completes the order', async ({ pageObject, page }) => {
+    test('finish button completes the order', async ({ pageObject }) => {
       await pageObject.checkout.finishButton.click();
-      await expect(page).toHaveURL(/checkout-complete/u);
+      await pageObject.checkout.completeHeader.expect().toBeVisible();
     });
   });
 
@@ -146,7 +146,7 @@ test.describe('Checkout', () => {
       await pageObject.checkout.finishButton.click();
     });
 
-    test('order completion state is correct', async ({ pageObject, loggedInPage, page }) => {
+    test('order completion state is correct', async ({ pageObject, loggedInPage }) => {
       await test.step('shows "Thank you for your order!" header', async () => {
         await pageObject.checkout.completeHeader.expect().toHaveText('Thank you for your order!');
       });
@@ -161,7 +161,7 @@ test.describe('Checkout', () => {
 
       await test.step('"Back Home" returns to inventory with an empty cart', async () => {
         await pageObject.checkout.backToProductsButton.click();
-        await expect(page).toHaveURL(/inventory/u);
+        await pageObject.inventory.pageTitle.expect().toBeVisible();
         expect(await loggedInPage.getCartBadgeCount()).toBe(0);
       });
     });

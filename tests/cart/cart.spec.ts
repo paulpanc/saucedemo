@@ -64,16 +64,16 @@ test.describe('Cart', () => {
       });
     });
 
-    test('cart navigation options work correctly', async ({ pageObject, loggedInPage, page }) => {
+    test('cart navigation options work correctly', async ({ pageObject, loggedInPage }) => {
       await test.step('continue shopping returns to inventory', async () => {
         await pageObject.cart.continueShoppingButton.click();
-        await expect(page).toHaveURL(/inventory/u);
+        await pageObject.inventory.pageTitle.expect().toBeVisible();
       });
 
       await test.step('checkout button proceeds to checkout step one', async () => {
         await loggedInPage.cartLink.click();
         await pageObject.cart.checkoutButton.click();
-        await expect(page).toHaveURL(/checkout-step-one/u);
+        await pageObject.checkout.continueButton.expect().toBeVisible();
       });
     });
   });

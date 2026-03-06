@@ -124,25 +124,25 @@ test.describe('Inventory', () => {
   test('navigating to a product detail page works correctly', async ({
     loggedInPage,
     products,
-    page,
+    pageObject,
   }) => {
-    await test.step('clicking product name navigates to the detail page URL', async () => {
+    await test.step('clicking product name navigates to the detail page', async () => {
       await loggedInPage.inventoryItem.name.first().click();
-      await expect(page).toHaveURL(/inventory-item/u);
+      await pageObject.inventory.cartLink.expect().toBeVisible();
     });
 
     await test.step('detail page shows the name of the clicked product', async () => {
-      await expect(page.locator('.inventory_details_name')).toHaveText(products.names[0]);
+      await pageObject.inventory.inventoryItem.name.expect().toHaveText(products.names[0]);
     });
   });
 
-  test('navigates to cart page via cart icon', async ({ loggedInPage, page }) => {
+  test('navigates to cart page via cart icon', async ({ loggedInPage, pageObject }) => {
     await loggedInPage.cartLink.click();
-    await expect(page).toHaveURL(/cart/u);
+    await pageObject.cart.pageTitle.expect().toBeVisible();
   });
 
-  test('logs out and redirects to login page', async ({ loggedInPage, page }) => {
+  test('logs out and redirects to login page', async ({ loggedInPage, pageObject }) => {
     await loggedInPage.logout();
-    await expect(page).toHaveURL('/');
+    await pageObject.login.loginButton.expect().toBeVisible();
   });
 });

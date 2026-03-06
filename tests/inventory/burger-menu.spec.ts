@@ -40,17 +40,20 @@ test.describe('Burger menu', () => {
   });
 
   test.describe('navigation', () => {
-    test('Logout redirects to the login page', async ({ loggedInPage, page }) => {
+    test('Logout redirects to the login page', async ({ loggedInPage, pageObject }) => {
       await loggedInPage.logout();
-      await expect(page).toHaveURL('/');
+      await pageObject.login.loginButton.expect().toBeVisible();
     });
 
-    test('All Items navigates back to inventory from cart', async ({ loggedInPage, page }) => {
+    test('All Items navigates back to inventory from cart', async ({
+      loggedInPage,
+      pageObject,
+    }) => {
       await loggedInPage.cartLink.click();
-      await expect(page).toHaveURL(/cart/u);
+      await pageObject.cart.pageTitle.expect().toBeVisible();
       await loggedInPage.burgerMenuButton.click();
       await loggedInPage.sidebarMenu.allItemsLink.click();
-      await expect(page).toHaveURL(/inventory/u);
+      await loggedInPage.pageTitle.expect().toBeVisible();
     });
 
     test('About navigates to the Sauce Labs website', async ({ loggedInPage, page }) => {
